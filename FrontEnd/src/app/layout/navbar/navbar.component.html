@@ -1,0 +1,49 @@
+<mat-toolbar class="app-navbar">
+
+  <a routerLink="/dashboard" class="brand">
+    ERP Console
+  </a>
+
+  <span class="spacer"></span>
+
+  <ng-container *ngIf="isAuthenticated$ | async; else guestLinks">
+
+    <div class="user-section" *ngIf="currentUser$ | async as user">
+
+      <div class="user-info">
+        <span class="welcome-text">
+          Welcome, {{ user.fullName || user.email }}
+        </span>
+
+        <span class="role-badge" *ngIf="role$ | async as role">
+          {{ role }}
+        </span>
+      </div>
+
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        Dashboard
+      </a>
+
+      <button mat-button type="button" class="logout-btn" [disabled]="loggingOut" (click)="onLogout()">
+        Logout
+      </button>
+
+    </div>
+
+  </ng-container>
+
+  <ng-template #guestLinks>
+
+    <div class="guest-links">
+      <a routerLink="/login" routerLinkActive="active" class="nav-link">
+        Login
+      </a>
+
+      <a routerLink="/register" routerLinkActive="active" class="nav-link">
+        Register
+      </a>
+    </div>
+
+  </ng-template>
+
+</mat-toolbar>

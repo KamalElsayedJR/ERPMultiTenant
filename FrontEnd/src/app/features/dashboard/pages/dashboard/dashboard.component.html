@@ -1,0 +1,40 @@
+<div class="container-fluid">
+  <div class="mb-4">
+    <h1 class="h3 mb-1">Welcome back</h1>
+    <p class="text-muted">Here is a quick snapshot of the ERP environment.</p>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Total Users</h5>
+          <div class="display-6 fw-semibold">{{ totalUsers }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Total Tenants</h5>
+          <div class="display-6 fw-semibold">{{ totalTenants }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">API Status</h5>
+          <div *ngIf="apiLoading" class="text-muted">Checking API health...</div>
+          <div *ngIf="!apiLoading && !apiError">
+            <span class="badge bg-success text-uppercase">{{ apiStatus }}</span>
+            <span class="ms-2">{{ apiMessage }}</span>
+          </div>
+          <div *ngIf="apiError" class="text-danger">{{ apiError }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

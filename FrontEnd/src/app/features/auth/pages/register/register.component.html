@@ -1,0 +1,50 @@
+<section class="auth-shell">
+    <div class="auth-card">
+        <header class="auth-header">
+            <p class="auth-eyebrow">ERP Workspace</p>
+            <h1>Create your account</h1>
+            <p class="auth-subtitle">Start managing teams, finances, and operations in one place.</p>
+        </header>
+
+        <form class="auth-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Full Name</mat-label>
+                <input matInput type="text" formControlName="fullName" autocomplete="name" />
+                <mat-error *ngIf="fullNameControl.hasError('required')">Full name is required.</mat-error>
+                <mat-error *ngIf="fullNameControl.hasError('minlength')">Full name must be at least 3
+                    characters.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" autocomplete="email" />
+                <mat-error *ngIf="emailControl.hasError('required')">Email is required.</mat-error>
+                <mat-error *ngIf="emailControl.hasError('email')">Enter a valid email address.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" formControlName="password" autocomplete="new-password" />
+                <mat-error *ngIf="passwordControl.hasError('required')">Password is required.</mat-error>
+                <mat-error *ngIf="passwordControl.hasError('minlength')">Password must be at least 6
+                    characters.</mat-error>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit" class="submit-button"
+                [disabled]="form.invalid || loading">
+                <ng-container *ngIf="!loading; else loadingState">Register</ng-container>
+                <ng-template #loadingState>
+                    <span class="loading-wrap">
+                        <mat-spinner diameter="18"></mat-spinner>
+                        Creating account...
+                    </span>
+                </ng-template>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <span>Already have access?</span>
+            <a routerLink="/login">Sign in</a>
+        </div>
+    </div>
+</section>

@@ -1,4 +1,8 @@
+using ERPMultiTenant.Application.Interfaces.Authentication;
+using ERPMultiTenant.Application.Interfaces.Persistence;
+using ERPMultiTenant.Infrastructure.Authentication;
 using ERPMultiTenant.Infrastructure.Data;
+using ERPMultiTenant.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +15,11 @@ public static class DependencyInjection
     {
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPasswordHasher, PasswordHasherService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
     }

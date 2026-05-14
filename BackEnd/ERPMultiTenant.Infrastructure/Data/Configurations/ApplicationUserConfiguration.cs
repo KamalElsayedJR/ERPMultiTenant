@@ -31,6 +31,9 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(user => user.TenantId)
+            .IsRequired();
+
         builder.Property(user => user.RefreshToken)
             .HasMaxLength(512);
 

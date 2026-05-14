@@ -16,10 +16,20 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Company Name</mat-label>
+                <input matInput type="text" formControlName="companyName" autocomplete="organization" />
+                <mat-error *ngIf="companyNameControl.hasError('required')">Company name is required.</mat-error>
+                <mat-error *ngIf="companyNameControl.hasError('minlength')">Company name must be at least 2
+                    characters.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Email</mat-label>
-                <input matInput type="email" formControlName="email" autocomplete="email" />
+                <input matInput type="email" formControlName="email" autocomplete="email"
+                    (input)="clearEmailExistsError()" />
                 <mat-error *ngIf="emailControl.hasError('required')">Email is required.</mat-error>
                 <mat-error *ngIf="emailControl.hasError('email')">Enter a valid email address.</mat-error>
+                <mat-error *ngIf="emailControl.hasError('emailExists')">Email already exists.</mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">

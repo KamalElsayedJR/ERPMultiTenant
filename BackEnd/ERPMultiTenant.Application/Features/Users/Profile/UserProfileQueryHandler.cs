@@ -9,7 +9,7 @@ public sealed class UserProfileQueryHandler(IUserRepository userRepository)
 {
     public async Task<Result<UserProfileResponse>> Handle(UserProfileQuery request, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
+        var user = await userRepository.GetByIdAsync(request.UserId, request.TenantId, cancellationToken);
         if (user is null)
         {
             return Result<UserProfileResponse>.Fail("User not found.");

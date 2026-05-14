@@ -21,5 +21,9 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.")
             .Matches("[0-9]").WithMessage("Password must contain at least one number.")
             .Matches("[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character.");
+
+        RuleFor(x => x.CompanyName)
+            .NotEmpty().WithMessage("Company name is required.")
+            .MaximumLength(200).WithMessage("Company name must be 200 characters or fewer.");
     }
 }

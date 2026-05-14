@@ -43,10 +43,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       return authService.refreshAccessToken().pipe(
         switchMap((newToken) => {
           if (!newToken) {
-            authService.forceLogout();
-            toastr.error('Session expired. Please log in again.');
-            router.navigate(['/login']);
-            return throwError(() => error);
+            return authService.waitForAuthReady().pipe(
+              switchMap(() => {
+                authService.forceLogout();
+                toastr.error('Session expired. Please log in again.');
+                router.navigate(['/login']);
+                return throwError(() => error);
+              })
+            );
           }
 
           const retryRequest = req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } });
@@ -56,12 +60,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             }
           }));
         }),
-        catchError((refreshError) => {
-          authService.forceLogout();
-          toastr.error('Session expired. Please log in again.');
-          router.navigate(['/login']);
-          return throwError(() => refreshError);
-        })
+        catchError((refreshError) =>
+          authService.waitForAuthReady().pipe(
+            switchMap(() => {
+              authService.forceLogout();
+              toastr.error('Session expired. Please log in again.');
+              router.navigate(['/login']);
+              return throwError(() => refreshError);
+            })
+          )
+        )
       );
     })
   );

@@ -1,10 +1,12 @@
 
+using ERPMultiTenant.API.Authorization;
 using ERPMultiTenant.API.Middleware;
 using ERPMultiTenant.API.Responses;
 using ERPMultiTenant.Application;
 using ERPMultiTenant.Application.Authentication;
 using ERPMultiTenant.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
@@ -71,7 +73,16 @@ namespace ERPMultiTenant.API
                         }
                     };
                 });
-            builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization(options =>
+            {
+                foreach (var permission in Enum.GetValues<ERPMultiTenant.Domain.Enums.Permission>())
+                {
+                    options.AddPolicy(
+                        PermissionPolicyConstants.GetPolicyName(permission),
+                        policy => policy.Requirements.Add(new PermissionRequirement(permission)));
+                }
+            });
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
             var app = builder.Build();
 

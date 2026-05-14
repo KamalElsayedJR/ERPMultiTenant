@@ -16,8 +16,4 @@
     <ProjectReference Include="..\ERPMultiTenant.Application\ERPMultiTenant.Application.csproj" />
     <ProjectReference Include="..\ERPMultiTenant.Domain\ERPMultiTenant.Domain.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Data\Migrations\" />
-  </ItemGroup>
 </Project>

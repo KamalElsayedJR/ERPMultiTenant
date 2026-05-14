@@ -26,7 +26,8 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options) : ITokenServic
         {
             new Claim("userId", user.Id.ToString()),
             new Claim("email", user.Email),
-            new Claim("role", user.Role.ToString()) 
+            new Claim("role", user.Role.ToString()),
+            new Claim("tenantId", user.TenantId.ToString())
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));

@@ -1,4 +1,5 @@
 using ERPMultiTenant.API.Responses;
+using ERPMultiTenant.Application.Features.Authentication.ChangePassword;
 using ERPMultiTenant.Application.Features.Authentication.Login;
 using ERPMultiTenant.Application.Features.Authentication.Logout;
 using ERPMultiTenant.Application.Features.Authentication.RefreshToken;
@@ -27,7 +28,7 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
 
         if (!result.Success)
         {
-            if (result.Error == "Email is already registered.")
+            if (result.Error == "Email already exists")
             {
                 return Conflict(ApiResponse<RegisterResponse>.Fail(result.Error));
             }
@@ -94,5 +95,35 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
         }
 
         return Ok(ApiResponse<string>.Ok(result.Value ?? "Logged out successfully."));
+    }
+
+    [HttpPut("change-password")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<ChangePasswordResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ChangePasswordResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ChangePasswordResponse>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<ChangePasswordResponse>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ChangePasswordResponse>>> ChangePassword(
+        [FromBody] ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(request, cancellationToken);
+
+        if (!result.Success)
+        {
+            if (result.Error == "Unauthorized")
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, ApiResponse<ChangePasswordResponse>.Fail(result.Error));
+            }
+
+            if (result.Error == "User not found.")
+            {
+                return NotFound(ApiResponse<ChangePasswordResponse>.Fail(result.Error));
+            }
+
+            return BadRequest(ApiResponse<ChangePasswordResponse>.Fail(result.Error ?? "Failed to change password."));
+        }
+
+        return Ok(ApiResponse<ChangePasswordResponse>.Ok("Password changed successfully.", result.Value));
     }
 }

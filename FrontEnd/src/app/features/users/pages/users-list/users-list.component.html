@@ -1,0 +1,159 @@
+<div class="container-fluid">
+    <div class="page-header">
+        <div>
+            <h1 class="h3 mb-1">Users</h1>
+            <p class="text-muted">Manage team members inside your tenant.</p>
+        </div>
+
+        <button mat-flat-button color="primary" type="button" *ngIf="canManageUsers$ | async" (click)="openInvite()">
+            Invite user
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div *ngIf="usersLoading" class="loading-state">
+                <mat-spinner diameter="28"></mat-spinner>
+                <span>Loading users...</span>
+            </div>
+
+            <div *ngIf="!usersLoading && usersError" class="alert alert-danger">
+                {{ usersError }}
+            </div>
+
+            <div *ngIf="!usersLoading && !usersError && users.length === 0" class="empty-state">
+                <p class="mb-1">No users yet.</p>
+                <p class="text-muted">Invite teammates to collaborate in your ERP workspace.</p>
+            </div>
+
+            <div *ngIf="!usersLoading && !usersError && users.length > 0" class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th *ngIf="canManageUsers$ | async">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of users; trackBy: trackByUserId">
+                            <td>{{ user.fullName || '—' }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <select class="form-select form-select-sm" [(ngModel)]="roleSelections[user.userId]"
+                                    (ngModelChange)="onRoleSelectionChange(user, $event)"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    [disabled]="!(canManageUsers$ | async) || isLastAdmin(user)">
+                                    <option *ngFor="let role of roleOptions" [value]="role">{{ role }}</option>
+                                </select>
+                            </td>
+                            <td *ngIf="canManageUsers$ | async">
+                                <button mat-button color="primary" type="button" class="action-button"
+                                    [disabled]="getRoleSelection(user) === user.role || isRoleUpdating(user.userId) || isDeletingUser(user.userId) || (isLastAdmin(user) && getRoleSelection(user) !== 'Admin')"
+                                    (click)="updateRole(user)">
+                                    <ng-container
+                                        *ngIf="!isRoleUpdating(user.userId); else updatingState">Update</ng-container>
+                                    <ng-template #updatingState>
+                                        <span class="action-loading">
+                                            <mat-spinner diameter="16"></mat-spinner>
+                                            Updating...
+                                        </span>
+                                    </ng-template>
+                                </button>
+                                <button mat-button color="warn" type="button" class="action-button"
+                                    [disabled]="isRoleUpdating(user.userId) || isDeletingUser(user.userId) || isLastAdmin(user)"
+                                    (click)="deleteUser(user)">
+                                    <ng-container
+                                        *ngIf="!isDeletingUser(user.userId); else deletingState">Delete</ng-container>
+                                    <ng-template #deletingState>
+                                        <span class="action-loading">
+                                            <mat-spinner diameter="16"></mat-spinner>
+                                            Deleting...
+                                        </span>
+                                    </ng-template>
+                                </button>
+                                <div class="inline-feedback"
+                                    *ngIf="isLastAdmin(user) || lastAdminBlockedUserId === user.userId">
+                                    Last admin cannot be deleted or downgraded. Assign another admin first.
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="inviteOpen">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="h5 mb-0">Invite user</h2>
+            <button type="button" class="btn-close" (click)="closeInvite()"></button>
+        </div>
+
+        <form class="modal-body" [formGroup]="inviteForm" (ngSubmit)="submitInvite()">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Full name</mat-label>
+                <input matInput type="text" formControlName="fullName" autocomplete="name" />
+                <mat-error *ngIf="fullNameControl.hasError('required')">Full name is required.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email address</mat-label>
+                <input matInput type="email" formControlName="email" autocomplete="email"
+                    (input)="clearInviteEmailExistsError()" />
+                <mat-error *ngIf="emailControl.hasError('required')">Email is required.</mat-error>
+                <mat-error *ngIf="emailControl.hasError('email')">Enter a valid email.</mat-error>
+                <mat-error *ngIf="emailControl.hasError('emailExists')">Email already exists.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Role</mat-label>
+                <mat-select formControlName="role">
+                    <mat-option *ngFor="let role of roleOptions" [value]="role">{{ role }}</mat-option>
+                </mat-select>
+                <mat-error *ngIf="roleControl.hasError('required')">Role is required.</mat-error>
+            </mat-form-field>
+
+            <div class="modal-actions">
+                <button mat-button type="button" (click)="closeInvite()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="inviteForm.invalid || inviteLoading">
+                    <ng-container *ngIf="!inviteLoading; else inviteLoadingState">Send invite</ng-container>
+                    <ng-template #inviteLoadingState>
+                        <span class="action-loading">
+                            <mat-spinner diameter="16"></mat-spinner>
+                            Sending...
+                        </span>
+                    </ng-template>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="invitePasswordOpen">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="h5 mb-0">Temporary password</h2>
+            <button type="button" class="btn-close" (click)="closeInvitePassword()"></button>
+        </div>
+
+        <div class="modal-body">
+            <p class="mb-3">
+                Share this temporary password with {{ invitePasswordEmail || 'the new user' }}.
+            </p>
+
+            <mat-form-field appearance="outline" class="full-width password-field">
+                <mat-label>Temporary password</mat-label>
+                <input matInput type="text" [value]="invitePassword" readonly />
+            </mat-form-field>
+
+            <div class="modal-actions">
+                <button mat-button type="button" (click)="closeInvitePassword()">Close</button>
+                <button mat-flat-button color="primary" type="button" (click)="copyInvitePassword()">Copy</button>
+            </div>
+        </div>
+    </div>
+</div>

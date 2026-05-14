@@ -1,5 +1,6 @@
 using ERPMultiTenant.Application.Interfaces.Persistence;
 using ERPMultiTenant.Domain.Entities;
+using ERPMultiTenant.Domain.Enums;
 using ERPMultiTenant.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,26 @@ public sealed class UserRepository(ApplicationDbContext context) : IUserReposito
         return context.ApplicationUsers.FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
     }
 
+    public Task<ApplicationUser?> GetByIdAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
+    {
+        return context.ApplicationUsers.FirstOrDefaultAsync(
+            user => user.Id == id && user.TenantId == tenantId,
+            cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ApplicationUser>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken)
+    {
+        return await context.ApplicationUsers
+            .Where(user => user.TenantId == tenantId)
+            .OrderBy(user => user.FullName)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<int> CountByRoleAsync(Guid tenantId, UserRole role, CancellationToken cancellationToken)
+    {
+        return context.ApplicationUsers.CountAsync(user => user.TenantId == tenantId && user.Role == role, cancellationToken);
+    }
+
     public async Task AddAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         await context.ApplicationUsers.AddAsync(user, cancellationToken);
@@ -31,6 +52,12 @@ public sealed class UserRepository(ApplicationDbContext context) : IUserReposito
     public async Task UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         context.ApplicationUsers.Update(user);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        context.ApplicationUsers.Remove(user);
         await context.SaveChangesAsync(cancellationToken);
     }
 }

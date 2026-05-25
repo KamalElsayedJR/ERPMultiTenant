@@ -5,5 +5,13 @@ public enum Permission
     ManageUsers,
     ManageExpenses,
     ViewDashboard,
-    ManageInvoices
+    ManageInvoices,
+    EmployeesView,
+    EmployeesCreate,
+    EmployeesUpdate,
+    EmployeesDelete,
+    DepartmentsView,
+    DepartmentsCreate,
+    DepartmentsUpdate,
+    DepartmentsDelete
 }

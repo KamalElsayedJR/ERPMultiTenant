@@ -1,5 +1,5 @@
 using ERPMultiTenant.Application.Interfaces.Authentication;
-using ERPMultiTenant.Application.Interfaces.Persistence;
+using ERPMultiTenant.Application.Interfaces.Persistence; // Ensure consistent namespace imports
 using ERPMultiTenant.Infrastructure.Authentication;
 using ERPMultiTenant.Infrastructure.Data;
 using ERPMultiTenant.Infrastructure.Data.Repositories;
@@ -17,6 +17,8 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasherService>();
         services.AddScoped<ITokenService, JwtTokenService>();

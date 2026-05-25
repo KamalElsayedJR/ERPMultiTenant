@@ -12,6 +12,8 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.HasKey(user => user.Id);
 
+        builder.HasAlternateKey(user => new { user.TenantId, user.Id });
+
         builder.Property(user => user.FullName)
             .HasMaxLength(150)
             .IsRequired();
@@ -41,5 +43,11 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.Property(user => user.CreatedAt)
             .IsRequired();
+
+        builder.HasOne(user => user.Employee)
+            .WithOne(employee => employee.ApplicationUser)
+            .HasForeignKey<Employee>(employee => new { employee.TenantId, employee.ApplicationUserId })
+            .HasPrincipalKey<ApplicationUser>(user => new { user.TenantId, user.Id })
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

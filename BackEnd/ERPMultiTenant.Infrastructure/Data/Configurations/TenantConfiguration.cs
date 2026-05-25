@@ -30,5 +30,15 @@ public sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .WithOne(user => user.Tenant)
             .HasForeignKey(user => user.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(tenant => tenant.Departments)
+            .WithOne(department => department.Tenant)
+            .HasForeignKey(department => department.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(tenant => tenant.Employees)
+            .WithOne(employee => employee.Tenant)
+            .HasForeignKey(employee => employee.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

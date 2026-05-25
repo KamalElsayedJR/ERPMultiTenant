@@ -1,0 +1,268 @@
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Employees</h1>
+      <p class="text-muted">Track employee records across departments.</p>
+    </div>
+
+    <button mat-flat-button color="primary" type="button" *ngIf="canManageEmployees$ | async"
+      (click)="openCreate()" [disabled]="!(canManageEmployees$ | async)">
+      New employee
+    </button>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form class="filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+        <mat-form-field appearance="outline">
+          <mat-label>Search</mat-label>
+          <input matInput type="text" formControlName="searchTerm" placeholder="Name, email, or number" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Department</mat-label>
+          <mat-select formControlName="departmentId">
+            <mat-option value="">All departments</mat-option>
+            <mat-option *ngFor="let department of departments" [value]="department.departmentId">
+              {{ department.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Min salary</mat-label>
+          <input matInput type="number" formControlName="minSalary" min="0" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Max salary</mat-label>
+          <input matInput type="number" formControlName="maxSalary" min="0" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Sort by</mat-label>
+          <mat-select formControlName="sortBy">
+            <mat-option value="employeeNumber">Employee number</mat-option>
+            <mat-option value="name">Name</mat-option>
+            <mat-option value="hireDate">Hire date</mat-option>
+            <mat-option value="salary">Salary</mat-option>
+            <mat-option value="department">Department</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Direction</mat-label>
+          <mat-select formControlName="sortDirection">
+            <mat-option value="asc">Ascending</mat-option>
+            <mat-option value="desc">Descending</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filters-actions">
+          <button mat-button type="button" (click)="resetFilters()">Reset</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="filterForm.invalid">
+            Apply
+          </button>
+        </div>
+
+        <div class="filters-error" *ngIf="salaryRangeInvalid">
+          Max salary must be greater than or equal to min salary.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div *ngIf="employeesLoading" class="loading-state">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>Loading employees...</span>
+      </div>
+
+      <div *ngIf="!employeesLoading && employeesError" class="alert alert-danger">
+        {{ employeesError }}
+      </div>
+
+      <div *ngIf="!employeesLoading && !employeesError && employees.length === 0" class="empty-state">
+        <p class="mb-1">No employees yet.</p>
+        <p class="text-muted">Create employee records to start managing your workforce.</p>
+      </div>
+
+      <div *ngIf="!employeesLoading && !employeesError && employees.length > 0" class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Employee #</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Title</th>
+              <th>Salary</th>
+              <th>Status</th>
+              <th>Hire date</th>
+              <th *ngIf="canManageEmployees$ | async">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let employee of employees; trackBy: trackByEmployeeId">
+              <td>
+                <button type="button" class="link-button" (click)="openDetails(employee)">
+                  {{ employee.fullName }}
+                </button>
+              </td>
+              <td>{{ employee.employeeNumber }}</td>
+              <td>{{ employee.email }}</td>
+              <td>{{ employee.departmentName }}</td>
+              <td>{{ employee.jobTitle || '—' }}</td>
+              <td>{{ employee.salary | currency }}</td>
+              <td>
+                <span class="status-pill">{{ employee.status }}</span>
+              </td>
+              <td>{{ employee.hireDate | date: 'mediumDate' }}</td>
+              <td *ngIf="canManageEmployees$ | async">
+                <button mat-button color="primary" type="button" class="action-button"
+                  (click)="openEdit(employee)" [disabled]="!(canManageEmployees$ | async)">
+                  Edit
+                </button>
+                <button mat-button color="warn" type="button" class="action-button"
+                  (click)="openDelete(employee)" [disabled]="!(canManageEmployees$ | async)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <div class="pagination-info">
+            Page {{ pageNumber }} of {{ totalPages }} · {{ totalCount }} employees
+          </div>
+          <div class="pagination-actions">
+            <mat-form-field appearance="outline" class="page-size">
+              <mat-label>Page size</mat-label>
+              <mat-select [(value)]="pageSize" (selectionChange)="changePageSize()">
+                <mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-button type="button" (click)="goToPreviousPage()" [disabled]="pageNumber <= 1">
+              Previous
+            </button>
+            <button mat-button type="button" (click)="goToNextPage()" [disabled]="pageNumber >= totalPages">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalOpen">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="h5 mb-0">{{ editingEmployee ? 'Edit employee' : 'Create employee' }}</h2>
+      <button type="button" class="btn-close" (click)="closeModal()" [disabled]="saveLoading"></button>
+    </div>
+
+    <form class="modal-body" [formGroup]="employeeForm" (ngSubmit)="submitForm()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Application user</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="applicationUserId"
+          [matAutocomplete]="applicationUsers"
+          (input)="clearDuplicateErrors()"
+          placeholder="Search by name or email"
+        />
+        <mat-autocomplete #applicationUsers="matAutocomplete" [displayWith]="displayUserLabel.bind(this)">
+          <mat-option *ngFor="let user of filteredUsers" [value]="user.userId">
+            {{ user.fullName }} ({{ user.email }})
+          </mat-option>
+        </mat-autocomplete>
+        <mat-error *ngIf="applicationUserIdControl.hasError('required')">Application user is required.</mat-error>
+        <mat-error *ngIf="applicationUserIdControl.hasError('userSelectionInvalid')">
+          Select a user from the list.
+        </mat-error>
+        <mat-error *ngIf="applicationUserIdControl.hasError('applicationUserExists')">
+          Application user already linked to an employee.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Department</mat-label>
+        <mat-select formControlName="departmentId">
+          <mat-option *ngFor="let department of departments" [value]="department.departmentId">
+            {{ department.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="departmentIdControl.hasError('required')">Department is required.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Job title</mat-label>
+        <input matInput type="text" formControlName="jobTitle" />
+        <mat-error *ngIf="jobTitleControl.hasError('maxlength')">Max 150 characters.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Hire date</mat-label>
+        <input matInput type="date" formControlName="hireDate" />
+        <mat-error *ngIf="hireDateControl.hasError('required')">Hire date is required.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Salary</mat-label>
+        <input matInput type="number" formControlName="salary" min="0" step="0.01" />
+        <mat-error *ngIf="salaryControl.hasError('required')">Salary is required.</mat-error>
+        <mat-error *ngIf="salaryControl.hasError('min')">Salary must be non-negative.</mat-error>
+      </mat-form-field>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="closeModal()" [disabled]="saveLoading">Cancel</button>
+        <button mat-flat-button color="primary" type="submit"
+          [disabled]="employeeForm.invalid || saveLoading || !(canManageEmployees$ | async)">
+          <ng-container *ngIf="!saveLoading; else saveLoadingState">
+            {{ editingEmployee ? 'Save changes' : 'Create employee' }}
+          </ng-container>
+          <ng-template #saveLoadingState>
+            <span class="action-loading">
+              <mat-spinner diameter="16"></mat-spinner>
+              Saving...
+            </span>
+          </ng-template>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="deleteOpen">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="h5 mb-0">Delete employee</h2>
+      <button type="button" class="btn-close" (click)="closeDelete()" [disabled]="deleteLoading"></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mb-0">
+        Are you sure you want to delete <strong>{{ deletingEmployee?.fullName }}</strong>?
+        This action cannot be undone.
+      </p>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="closeDelete()" [disabled]="deleteLoading">Cancel</button>
+        <button mat-flat-button color="warn" type="button" (click)="confirmDelete()"
+          [disabled]="deleteLoading || !(canManageEmployees$ | async)">
+          <ng-container *ngIf="!deleteLoading; else deleteLoadingState">Delete employee</ng-container>
+          <ng-template #deleteLoadingState>
+            <span class="action-loading">
+              <mat-spinner diameter="16"></mat-spinner>
+              Deleting...
+            </span>
+          </ng-template>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

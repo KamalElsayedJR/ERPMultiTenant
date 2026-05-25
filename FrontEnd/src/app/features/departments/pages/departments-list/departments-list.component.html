@@ -1,0 +1,132 @@
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Departments</h1>
+      <p class="text-muted">Manage department records for your ERP tenant.</p>
+    </div>
+
+    <button mat-flat-button color="primary" type="button" *ngIf="canManageDepartments$ | async"
+      (click)="openCreate()" [disabled]="!(canManageDepartments$ | async)">
+      New department
+    </button>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div *ngIf="departmentsLoading" class="loading-state">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>Loading departments...</span>
+      </div>
+
+      <div *ngIf="!departmentsLoading && departmentsError" class="alert alert-danger">
+        {{ departmentsError }}
+      </div>
+
+      <div *ngIf="!departmentsLoading && !departmentsError && departments.length === 0" class="empty-state">
+        <p class="mb-1">No departments yet.</p>
+        <p class="text-muted">Create departments to organize your teams.</p>
+      </div>
+
+      <div *ngIf="!departmentsLoading && !departmentsError && departments.length > 0" class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Created</th>
+              <th *ngIf="canManageDepartments$ | async">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let department of departments; trackBy: trackByDepartmentId">
+              <td>{{ department.name }}</td>
+              <td>{{ department.description || '—' }}</td>
+              <td>{{ department.createdAt | date: 'mediumDate' }}</td>
+              <td *ngIf="canManageDepartments$ | async">
+                <button mat-button color="primary" type="button" class="action-button"
+                  (click)="openEdit(department)" [disabled]="!(canManageDepartments$ | async)">
+                  Edit
+                </button>
+                <button mat-button color="warn" type="button" class="action-button"
+                  (click)="openDelete(department)" [disabled]="!(canManageDepartments$ | async)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalOpen">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="h5 mb-0">{{ editingDepartment ? 'Edit department' : 'Create department' }}</h2>
+      <button type="button" class="btn-close" (click)="closeModal()" [disabled]="saveLoading"></button>
+    </div>
+
+    <form class="modal-body" [formGroup]="departmentForm" (ngSubmit)="submitForm()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Department name</mat-label>
+        <input matInput type="text" formControlName="name" (input)="clearDuplicateNameError()" />
+        <mat-error *ngIf="nameControl.hasError('required')">Name is required.</mat-error>
+        <mat-error *ngIf="nameControl.hasError('maxlength')">Name cannot exceed 200 characters.</mat-error>
+        <mat-error *ngIf="nameControl.hasError('nameExists')">Department name already exists.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="3" formControlName="description"></textarea>
+        <mat-error *ngIf="descriptionControl.hasError('maxlength')">Description cannot exceed 500 characters.</mat-error>
+      </mat-form-field>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="closeModal()" [disabled]="saveLoading">Cancel</button>
+        <button mat-flat-button color="primary" type="submit"
+          [disabled]="departmentForm.invalid || saveLoading || !(canManageDepartments$ | async)">
+          <ng-container *ngIf="!saveLoading; else saveLoadingState">
+            {{ editingDepartment ? 'Save changes' : 'Create department' }}
+          </ng-container>
+          <ng-template #saveLoadingState>
+            <span class="action-loading">
+              <mat-spinner diameter="16"></mat-spinner>
+              Saving...
+            </span>
+          </ng-template>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="deleteOpen">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="h5 mb-0">Delete department</h2>
+      <button type="button" class="btn-close" (click)="closeDelete()" [disabled]="deleteLoading"></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mb-0">
+        Are you sure you want to delete <strong>{{ deletingDepartment?.name }}</strong>?
+        This action cannot be undone.
+      </p>
+
+      <div class="modal-actions">
+        <button mat-button type="button" (click)="closeDelete()" [disabled]="deleteLoading">Cancel</button>
+        <button mat-flat-button color="warn" type="button" (click)="confirmDelete()"
+          [disabled]="deleteLoading || !(canManageDepartments$ | async)">
+          <ng-container *ngIf="!deleteLoading; else deleteLoadingState">Delete department</ng-container>
+          <ng-template #deleteLoadingState>
+            <span class="action-loading">
+              <mat-spinner diameter="16"></mat-spinner>
+              Deleting...
+            </span>
+          </ng-template>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

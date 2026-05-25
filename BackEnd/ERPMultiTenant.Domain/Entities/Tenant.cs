@@ -8,4 +8,6 @@ public sealed class Tenant
     // TODO: Introduce soft-delete fields (e.g., IsDeleted/DeletedAt) when tenant removal is implemented.
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
+    public ICollection<Department> Departments { get; set; } = new List<Department>();
+    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

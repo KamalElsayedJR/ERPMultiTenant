@@ -8,9 +8,31 @@ public static class PermissionMappings
         new Dictionary<UserRole, Permission[]>
         {
             [UserRole.Admin] = Enum.GetValues<Permission>(),
-            [UserRole.Manager] = new[] { Permission.ManageExpenses, Permission.ViewDashboard, Permission.ManageInvoices },
-            [UserRole.Employee] = new[] { Permission.ViewDashboard },
-            [UserRole.Accountant] = new[] { Permission.ManageInvoices, Permission.ViewDashboard }
+            [UserRole.Manager] = new[]
+            {
+                Permission.ManageExpenses,
+                Permission.ViewDashboard,
+                Permission.ManageInvoices,
+                Permission.EmployeesView,
+                Permission.EmployeesCreate,
+                Permission.EmployeesUpdate,
+                Permission.DepartmentsView,
+                Permission.DepartmentsCreate,
+                Permission.DepartmentsUpdate
+            },
+            [UserRole.Employee] = new[]
+            {
+                Permission.ViewDashboard,
+                Permission.EmployeesView,
+                Permission.DepartmentsView
+            },
+            [UserRole.Accountant] = new[]
+            {
+                Permission.ManageInvoices,
+                Permission.ViewDashboard,
+                Permission.EmployeesView,
+                Permission.DepartmentsView
+            }
         };
 
     public static IReadOnlyCollection<Permission> GetPermissions(UserRole role)

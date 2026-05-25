@@ -2,6 +2,12 @@
   <div class="sidebar-title">Modules</div>
   <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
   <a routerLink="/change-password" routerLinkActive="active" class="nav-link">Change Password</a>
+  <a *ngIf="canManageEmployees$ | async" routerLink="/employees" routerLinkActive="active" class="nav-link">
+    Employees
+  </a>
+  <a *ngIf="canManageDepartments$ | async" routerLink="/departments" routerLinkActive="active" class="nav-link">
+    Departments
+  </a>
   <a *ngIf="canManageUsers$ | async" routerLink="/users" routerLinkActive="active" class="nav-link">
     Users
   </a>

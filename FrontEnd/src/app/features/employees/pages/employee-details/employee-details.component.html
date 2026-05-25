@@ -1,0 +1,62 @@
+<div class="container-fluid">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Employee details</h1>
+      <p class="text-muted">Review employee information and assignment.</p>
+    </div>
+
+    <a mat-button color="primary" routerLink="/employees">Back to employees</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>Loading employee...</span>
+      </div>
+
+      <div *ngIf="!loading && errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="!loading && !errorMessage && employee" class="details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Employee number</span>
+          <span class="detail-value">{{ employee.EmployeeNumber }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Name</span>
+          <span class="detail-value">{{ employee.FullName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ employee.Email }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Department</span>
+          <span class="detail-value">{{ employee.DepartmentName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Job title</span>
+          <span class="detail-value">{{ employee.JobTitle || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Salary</span>
+          <span class="detail-value">{{ employee.Salary | currency }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Hire date</span>
+          <span class="detail-value">{{ employee.HireDate | date: 'mediumDate' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Created</span>
+          <span class="detail-value">{{ employee.CreatedAt | date: 'medium' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Last updated</span>
+          <span class="detail-value">{{ employee.UpdatedAt ? (employee.UpdatedAt | date: 'medium') : '—' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

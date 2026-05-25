@@ -10,6 +10,7 @@ public sealed class ApplicationUser : BaseEntity
     public UserRole Role { get; set; } = UserRole.Employee;
     public Guid TenantId { get; set; }
     public Tenant? Tenant { get; set; }
+    public Employee? Employee { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
 }

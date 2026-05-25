@@ -5,6 +5,9 @@ import { RegisterComponent } from './features/auth/pages/register/register.compo
 import { authChildGuard, authGuard } from './core/guards/auth.guard';
 import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout.component';
 import { UsersListComponent } from './features/users/pages/users-list/users-list.component';
+import { DepartmentsListComponent } from './features/departments/pages/departments-list/departments-list.component';
+import { EmployeesListComponent } from './features/employees/pages/employees-list/employees-list.component';
+import { EmployeeDetailsComponent } from './features/employees/pages/employee-details/employee-details.component';
 import { roleGuard } from './core/guards/role.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import { ChangePasswordComponent } from './features/auth/pages/change-password/change-password.component';
@@ -28,6 +31,30 @@ export const routes: Routes = [
         data: {
           roles: ['Admin'],
           permissions: ['ManageUsers']
+        }
+      },
+      {
+        path: 'departments',
+        component: DepartmentsListComponent,
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['ManageDepartments']
+        }
+      },
+      {
+        path: 'employees',
+        component: EmployeesListComponent,
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['ManageEmployees']
+        }
+      },
+      {
+        path: 'employees/:employeeId',
+        component: EmployeeDetailsComponent,
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['ManageEmployees']
         }
       }
     ]

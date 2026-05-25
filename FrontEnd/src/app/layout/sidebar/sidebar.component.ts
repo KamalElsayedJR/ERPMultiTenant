@@ -13,6 +13,12 @@ import { AuthService } from '../../core/services/auth.service';
     styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
+    readonly canManageEmployees$ = this.authService.currentUser$.pipe(
+        map((user) => this.authService.isAdmin(user) || this.authService.hasPermission('ManageEmployees', user))
+    );
+    readonly canManageDepartments$ = this.authService.currentUser$.pipe(
+        map((user) => this.authService.isAdmin(user) || this.authService.hasPermission('ManageDepartments', user))
+    );
     readonly canManageUsers$ = this.authService.currentUser$.pipe(
         map((user) => this.authService.isAdmin(user) || this.authService.hasPermission('ManageUsers', user))
     );
